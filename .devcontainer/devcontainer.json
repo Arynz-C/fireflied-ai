@@ -1,0 +1,11 @@
+{
+  "name": "Fireflies AI",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {},
+  "customizations": {
+    "vscode": {
+      "settings": {}
+    }
+  },
+  "postCreateCommand": "ollama pull Arynz/FireFlies:3b"
+}
