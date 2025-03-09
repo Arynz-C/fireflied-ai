@@ -8,8 +8,8 @@ model_path = "/workspaces/fireflied-ai/llama.cpp/deepseek-model"
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 model = AutoModelForCausalLM.from_pretrained(
     model_path,
-    torch_dtype=torch.float32,  # Gunakan float32 karena CPU only
-    device_map={"": "cpu"}      # Paksa model berjalan di CPU
+    torch_dtype=torch.float32,  # Gunakan float32 karena CPU only flat 16 untuk gpu ygy
+    device_map={"": "cpu"}      # Paksa model berjalan di CPU 
 )
 
 # 📌 Load dataset JSONL
@@ -18,7 +18,7 @@ dataset = load_dataset("json", data_files="/workspaces/fireflied-ai/code-end-to-
 # 📌 Fungsi untuk memproses dataset agar sesuai dengan model
 def tokenize_function(example):
     prompt = f"### Instruction:\n{example['instruction']}\n\n### Response:\n{example['response']}"
-    tokenized = tokenizer(prompt, padding="max_length", truncation=True, max_length=128)
+    tokenized = tokenizer(prompt, padding="max_length", truncation=True, max_length=128) #bisa lu naikin tapi ya minimal punya sepekan nasa
     
     tokenized["labels"] = tokenized["input_ids"].copy()  # Labels harus sama dengan input_ids untuk causal LM
     return tokenized
@@ -32,7 +32,7 @@ print(dataset["train"][0])
 
 # 📌 Konfigurasi LoRA (Low-Rank Adaptation) dengan Key, Value, dan Query
 lora_config = LoraConfig(
-    r=8,                     # Rank LoRA (semakin besar, semakin kompleks)
+    r=8,                     # Rank LoRA (semakin besar, semakin kompleks) tapi sepek pc lu nasa
     lora_alpha=16,           # Scaling factor
     target_modules=["q_proj", "k_proj", "v_proj"],  # 🔹 Tambahkan "k_proj" dan "v_proj"
     lora_dropout=0.05        # Dropout untuk regulasi
@@ -42,7 +42,7 @@ model = get_peft_model(model, lora_config)
 # 📌 Konfigurasi Training
 training_args = TrainingArguments(
     output_dir="./fine_tuned_deepseek",
-    per_device_train_batch_size=1,  # CPU only, batch kecil agar tidak kehabisan RAM
+    per_device_train_batch_size=1,  # CPU only, batch kecil agar tidak kehabisan RAM ,naikin=nambah penggunaan memori
     gradient_accumulation_steps=4,
     num_train_epochs=1,
     save_strategy="epoch",
